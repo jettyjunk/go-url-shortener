@@ -5,6 +5,12 @@ DB_URL=postgres://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@localhost:5432/$(POSTGRE
 
 .PHONY: up down migrate-up migrate-down psql run
 
+build:
+	go build ./cmd/... ./internal/...
+
+test:
+	go test ./internal/...
+
 up:
 	docker compose up -d
 
