@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS links (
+    id BIGSERIAL PRIMARY KEY,
+    code VARCHAR(10) UNIQUE NOT NULL,
+    original_url TEXT NOT NULL, 
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    expires_at TIMESTAMPTZ NULL
+);
