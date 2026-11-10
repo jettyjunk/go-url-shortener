@@ -27,5 +27,4 @@ psql:
 	docker compose exec shortener-postgres psql -U $(POSTGRES_USER) -d $(POSTGRES_DB)
 
 run: 
-	go mod tidy && \
 	go run ./cmd/app
