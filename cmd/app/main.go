@@ -11,6 +11,7 @@ import (
 	"github.com/jettyjunk/go-url-shortener/internal/handler"
 	"github.com/jettyjunk/go-url-shortener/internal/repository"
 	"github.com/jettyjunk/go-url-shortener/internal/service"
+	"github.com/redis/go-redis/v9"
 )
 
 func main() {
@@ -38,8 +39,18 @@ func run() error {
 		return fmt.Errorf("ping postgres: %w", err)
 	}
 
+	rdb := redis.NewClient(&redis.Options{
+		Addr: cfg.RedisAddr,
+	})
+	defer rdb.Close()
+
+	if err := rdb.Ping(ctx).Err(); err != nil {
+		return fmt.Errorf("redis ping: %w", err)
+	}
+
 	repo := repository.NewLinksRepository(pool)
-	svc := service.NewLinkService(repo)
+	cached := repository.NewCachedLinks(repo, rdb, cfg.CacheTTL)
+	svc := service.NewLinkService(cached)
 	h := handler.NewLinkHTTPHandler(svc, cfg.BaseURL)
 
 	server := &http.Server{

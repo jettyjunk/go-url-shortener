@@ -13,6 +13,8 @@ type Config struct {
 	PostgresUser    string
 	PostgresPass    string
 	PostgresDB      string
+	RedisAddr       string
+	CacheTTL        time.Duration
 }
 
 func Load() (Config, error) {
@@ -51,6 +53,25 @@ func Load() (Config, error) {
 		return Config{}, fmt.Errorf("parse HTTP_SHUTDOWN_TIMEOUT: %w", err)
 	}
 
+	rds, err := requireEnv("REDIS_ADDR")
+	if err != nil {
+		return Config{}, err
+	}
+
+	rawTTL, err := requireEnv("CACHE_TTL")
+	if err != nil {
+		return Config{}, err
+	}
+
+	ttl, err := time.ParseDuration(rawTTL)
+	if err != nil {
+		return Config{}, fmt.Errorf("parse CACHE_TTL: %w", err)
+	}
+
+	if ttl <= 0 {
+		return Config{}, fmt.Errorf("CACHE_TTL must be positive")
+	}
+
 	return Config{
 		HTTPAddr:        addr,
 		BaseURL:         url,
@@ -58,6 +79,8 @@ func Load() (Config, error) {
 		PostgresUser:    puser,
 		PostgresPass:    ppass,
 		PostgresDB:      pdb,
+		RedisAddr:       rds,
+		CacheTTL:        ttl,
 	}, nil
 }
 
